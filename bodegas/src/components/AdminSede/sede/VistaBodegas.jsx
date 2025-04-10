@@ -1,275 +1,196 @@
-import { useState, useEffect } from "react";
-import { Menu, LogOut, Plus, Edit, X, Trash } from "lucide-react";
+import { useState } from "react";
 import Swal from "sweetalert2";
-import axios from "axios"; 
 
-const VistaBodega = () => {
-  const [bodegas, setBodegas] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedBodega, setSelectedBodega] = useState(null);
+// Simulación de bodegas registradas
+const bodegasSimuladas = [
+  { id: "B1", estado: "vacante", precio: 1500, tamano: "chica", edificio: "A", folio: "B32" },
+  { id: "B2", estado: "ocupada", precio: 1800, tamano: "mediana", edificio: "B", folio: "B33" },
+  { id: "B3", estado: "vacante", precio: 2200, tamano: "grande", edificio: "C", folio: "B34" },
+];
 
-  useEffect(() => {
-    axios.get("http://localhost:8080/api/bodegas/")
-      .then((response) => setBodegas(response.data))
-      .catch((error) => console.error("Error al obtener bodegas:", error));
-  }, []);
+const BodegaGestion = () => {
+  const [bodegas, setBodegas] = useState(bodegasSimuladas);
+  const [folio, setFolio] = useState("");
+  const [precio, setPrecio] = useState("");
+  const [tamano, setTamano] = useState("");
+  const [vacante, setVacante] = useState("");
+  const [edificio, setEdificio] = useState("");
+  const [bodegaEdicion, setBodegaEdicion] = useState(null);
 
-  const handleNewBodega = () => {
-    window.location.href = "/sedes/gestion";
-  };
+  // Validación para verificar si el formulario está completo
+  const isFormValid = () => folio && precio && tamano && vacante && edificio;
 
-  const handleEdit = (bodega) => {
-    setSelectedBodega(bodega);
-    setModalOpen(true);
-  };
-
-  const handleDelete = (bodega) => {
-    Swal.fire({
-      title: `¿Eliminar la bodega ${bodega.id}?`,
-      text: "Esta acción no se puede deshacer.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#aaa",
-      confirmButtonText: "Sí, eliminar",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        axios.delete(`http://localhost:8080/api/bodegas/Eliminar/${bodega.id}`)
-          .then(() => {
-            setBodegas((prev) => prev.filter((b) => b.id !== bodega.id));
-            Swal.fire({
-              icon: "success",
-              title: "Bodega eliminada",
-              showConfirmButton: false,
-              timer: 1500,
-            });
-          })
-          .catch((error) => console.error("Error al eliminar la bodega:", error));
-      }
-    });
-  };
-
-  const handleInputChange = (field, value) => {
-    setSelectedBodega({ ...selectedBodega, [field]: value });
-  };
-
-  const validateBodega = (bodega) => {
-    if (!bodega.id || bodega.id.trim() === "") {
-      return "El folio no puede estar vacío.";
-    }
-    if (!["Chica", "Mediana", "Grande"].includes(bodega.tamano)) {
-      return "Seleccione un tamaño válido (Chica, Mediana o Grande).";
-    }
-    if (!bodega.edificio || bodega.edificio.trim() === "") {
-      return "El edificio no puede estar vacío.";
-    }
-    if (bodega.edificio.trim().length !== 1 || !/[A-Z]/.test(bodega.edificio.trim())) {
-      return "El edificio debe ser una letra mayúscula (ej. A, B, C).";
-    }
-    if (isNaN(bodega.precio) || Number(bodega.precio) <= 0) {
-      return "El precio debe ser un número mayor a cero.";
-    }
-    if (!["Vacante", "Ocupada", "Fuera de venta"].includes(bodega.estado)) {
-      return "Seleccione un estado válido (Vacante, Ocupada o Fuera de venta).";
-    }
-    return null;
-  };
-
-  const handleSaveChanges = () => {
-    if (!selectedBodega) return;
-
-    const error = validateBodega(selectedBodega);
-    if (error) {
+  // Función para registrar una nueva bodega
+  const handleSubmit = () => {
+    if (isFormValid()) {
+      const nuevaBodega = { folio, precio, tamano, vacante, edificio, estado: vacante };
+      setBodegas([...bodegas, nuevaBodega]);
       Swal.fire({
-        icon: "warning",
-        title: "Validación",
-        text: error,
+        icon: "success",
+        title: "Bodega registrada",
+        text: "Los datos se han guardado correctamente",
+      });
+
+      // Limpiar campos
+      setFolio("");
+      setPrecio("");
+      setTamano("");
+      setVacante("");
+      setEdificio("");
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Por favor completa todos los campos.",
+      });
+    }
+  };
+
+  // Función para editar los datos de una bodega
+  const handleEdit = (bodega) => {
+    if (bodega.estado === "ocupada") {
+      Swal.fire({
+        icon: "error",
+        title: "Bodega ocupada",
+        text: "No se pueden modificar los datos de una bodega que está en renta.",
       });
       return;
     }
 
-    // Actualizar la bodega
-    axios.put(`http://localhost:8080/api/bodegas/${selectedBodega.id}`, selectedBodega)
-      .then((response) => {
-        setBodegas((prev) =>
-          prev.map((b) => (b.id === selectedBodega.id ? selectedBodega : b))
-        );
-        setModalOpen(false);
-        Swal.fire({
-          icon: "success",
-          title: "Bodega actualizada",
-          showConfirmButton: false,
-          timer: 1500,
-        });
-      })
-      .catch((error) => {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "Hubo un problema al guardar los cambios.",
-        });
-        console.error("Error al actualizar bodega:", error);
-      });
+    setBodegaEdicion(bodega);
+    setFolio(bodega.folio);
+    setPrecio(bodega.precio);
+    setTamano(bodega.tamano);
+    setVacante(bodega.estado);
+    setEdificio(bodega.edificio);
   };
 
-  const getEstadoColor = (estado) => {
-    switch (estado) {
-      case "Vacante":
-        return "text-green-600";
-      case "Ocupada":
-        return "text-red-600";
-      case "Fuera de venta":
-        return "text-yellow-600";
-      default:
-        return "text-gray-600";
+  // Función para guardar la edición de una bodega
+  const handleSaveEdit = () => {
+    if (isFormValid()) {
+      const updatedBodegas = bodegas.map((bodega) =>
+        bodega.folio === bodegaEdicion.folio
+          ? { ...bodega, folio, precio, tamano, estado: vacante, edificio }
+          : bodega
+      );
+      setBodegas(updatedBodegas);
+
+      Swal.fire({
+        icon: "success",
+        title: "Bodega modificada",
+        text: "Los datos se han actualizado correctamente",
+      });
+
+      setBodegaEdicion(null);
+      setFolio("");
+      setPrecio("");
+      setTamano("");
+      setVacante("");
+      setEdificio("");
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Por favor completa todos los campos.",
+      });
     }
   };
 
-  const handleGoToAnotherPage = () => {
-    window.location.href = "/sedes/dashboard"; 
-  };
-
   return (
-    <div className="flex flex-col min-h-screen w-screen bg-white overflow-hidden">
-      <nav className="bg-orange-500 text-white p-4 flex justify-between items-center w-full shadow-md fixed top-0 left-0 z-50">
-        <div className="text-lg font-bold">LOGO</div>
-        <div className="space-x-4 flex">
-          <Menu className="cursor-pointer" />
-          <LogOut className="cursor-pointer" />
-        </div>
-      </nav>
+    <div className="w-full font-sans bg-black text-white min-h-screen">
+      <main className="pt-28 px-4 md:px-8 flex flex-col items-center min-h-screen bg-black">
+        <div className="bg-white text-black w-full max-w-2xl p-8 rounded-xl shadow-lg mb-10">
+          <h2 className="text-center text-3xl font-bold text-orange-500 mb-6">
+            {bodegaEdicion ? "Editar Bodega" : "Alta de Bodega"}
+          </h2>
 
-      <div className="flex flex-col items-center justify-center flex-1 w-full min-h-screen bg-white pt-20 px-4 md:px-6">
-        <div className="w-full max-w-6xl bg-white p-6 md:p-8 rounded-lg shadow-lg border border-gray-200">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-semibold text-gray-800">Listado de Bodegas</h1>
-            <button
-              className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-orange-600"
-              onClick={handleNewBodega}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <input
+              className="w-full p-3 border border-gray-300 rounded-lg"
+              placeholder="Folio (Ej: B32)"
+              value={folio}
+              onChange={(e) => setFolio(e.target.value)}
+              disabled={bodegaEdicion && bodegaEdicion.estado === "ocupada"} // No permitir modificar el folio si está ocupada
+            />
+            <input
+              className="w-full p-3 border border-gray-300 rounded-lg"
+              placeholder="Precio personalizado"
+              type="number"
+              value={precio}
+              onChange={(e) => setPrecio(e.target.value)}
+              disabled={bodegaEdicion && bodegaEdicion.estado === "ocupada"} // No permitir modificar el precio si está ocupada
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <select
+              className="w-full p-3 border border-gray-300 rounded-lg"
+              value={tamano}
+              onChange={(e) => setTamano(e.target.value)}
+              disabled={bodegaEdicion && bodegaEdicion.estado === "ocupada"} // No permitir modificar el tamaño si está ocupada
             >
-              <Plus className="w-5 h-5 mr-2" /> Nueva Bodega
-            </button>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse border border-gray-300 rounded-lg">
-              <thead>
-                <tr className="bg-orange-500 text-white text-center">
-                  <th className="p-3 border border-gray-300">Folio</th>
-                  <th className="p-3 border border-gray-300">Tamaño</th>
-                  <th className="p-3 border border-gray-300">Edificio</th>
-                  <th className="p-3 border border-gray-300">Precio</th>
-                  <th className="p-3 border border-gray-300">Estado</th>
-                  <th className="p-3 border border-gray-300">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {bodegas.map((bodega, index) => (
-                  <tr
-                    key={index}
-                    className={`text-gray-800 text-center bg-white hover:bg-gray-50`}
-                  >
-                    <td className="p-3 border border-gray-300">{bodega.id}</td>
-                    <td className="p-3 border border-gray-300">{bodega.tamano}</td>
-                    <td className="p-3 border border-gray-300">{bodega.edificio}</td>
-                    <td className="p-3 border border-gray-300">${bodega.precio}</td>
-                    <td className={`p-3 border border-gray-300 font-semibold ${getEstadoColor(bodega.estado)}`}>
-                      {bodega.estado}
-                    </td>
-                    <td className="p-3 border border-gray-300 flex justify-center space-x-2">
-                      <button
-                        className="bg-blue-500 text-white px-3 py-1 rounded-lg flex items-center hover:bg-blue-600"
-                        onClick={() => handleEdit(bodega)}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        className="bg-red-500 text-white px-3 py-1 rounded-lg flex items-center hover:bg-red-600"
-                        onClick={() => handleDelete(bodega)}
-                      >
-                        <Trash className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {bodegas.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="text-center p-4 text-gray-500">
-                      No hay bodegas registradas.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <button
-          onClick={handleGoToAnotherPage}
-          className="mt-6 px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all duration-300"
-        >
-          Ir al menu principal
-        </button>
-      </div>
-
-      {modalOpen && selectedBodega && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl w-full max-w-md p-6 relative">
-            <button
-              className="absolute top-4 right-4 text-gray-600 hover:text-black"
-              onClick={() => setModalOpen(false)}
+              <option value="">Tamaño de la bodega</option>
+              <option value="chica">Chica</option>
+              <option value="mediana">Mediana</option>
+              <option value="grande">Grande</option>
+            </select>
+            <select
+              className="w-full p-3 border border-gray-300 rounded-lg"
+              value={vacante}
+              onChange={(e) => setVacante(e.target.value)}
+              disabled={bodegaEdicion && bodegaEdicion.estado === "ocupada"} // No permitir modificar el estado si está ocupada
             >
-              <X className="w-5 h-5" />
-            </button>
-            <h2 className="text-xl font-bold mb-4 text-orange-500">Editar Bodega</h2>
-
-            <div className="flex flex-col space-y-6">
-              <input
-                disabled
-                value={selectedBodega.id}
-                className="p-3 border-2 border-gray-300 rounded-lg bg-gray-200 text-black font-medium focus:outline-none"
-              />
-              <select
-                value={selectedBodega.tamano}
-                onChange={(e) => handleInputChange("tamano", e.target.value)}
-                className="p-3 border-2 border-gray-300 rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-orange-500"
-              >
-                <option value="Chica">Chica</option>
-                <option value="Mediana">Mediana</option>
-                <option value="Grande">Grande</option>
-              </select>
-              <input
-                value={selectedBodega.edificio}
-                onChange={(e) => handleInputChange("edificio", e.target.value)}
-                className="p-3 border-2 border-gray-300 rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-orange-500"
-              />
-              <input
-                value={selectedBodega.precio}
-                onChange={(e) => handleInputChange("precio", e.target.value)}
-                type="number"
-                className="p-3 border-2 border-gray-300 rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-orange-500"
-              />
-              <select
-                value={selectedBodega.estado}
-                onChange={(e) => handleInputChange("estado", e.target.value)}
-                className="p-3 border-2 border-gray-300 rounded-lg bg-white text-black focus:outline-none focus:ring-2 focus:ring-orange-500"
-              >
-                <option value="Vacante">Vacante</option>
-                <option value="Ocupada">Ocupada</option>
-                <option value="Fuera de venta">Fuera de venta</option>
-              </select>
-              <button
-                onClick={handleSaveChanges}
-                className="mt-6 px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all duration-300"
-              >
-                Guardar cambios
-              </button>
-            </div>
+              <option value="">Estado</option>
+              <option value="ocupada">Ocupada</option>
+              <option value="vacante">Vacante</option>
+              <option value="fuera de venta">Fuera de Venta</option>
+            </select>
           </div>
+
+          <input
+            className="w-full p-3 border border-gray-300 rounded-lg mb-6"
+            placeholder="Edificio (Ej: A, B, C...)"
+            value={edificio}
+            onChange={(e) => setEdificio(e.target.value)}
+            disabled={bodegaEdicion && bodegaEdicion.estado === "ocupada"} // No permitir modificar el edificio si está ocupada
+          />
+
+          <button
+            className={`w-full p-3 text-lg rounded-lg transition-all duration-300 ${
+              isFormValid() && !bodegaEdicion
+                ? "bg-orange-500 hover:bg-orange-600 text-white"
+                : "bg-gray-400 text-gray-700 cursor-not-allowed"
+            }`}
+            disabled={!isFormValid() || bodegaEdicion}
+            onClick={bodegaEdicion ? handleSaveEdit : handleSubmit}
+          >
+            {bodegaEdicion ? "Guardar Cambios" : "Registrar Bodega"}
+          </button>
         </div>
-      )}
+
+        {/* Listado de bodegas */}
+        <div className="bg-white text-black w-full max-w-2xl p-6 rounded-xl shadow-lg">
+          <h3 className="text-xl font-bold text-center mb-4 text-orange-500">
+            Bodegas Registradas
+          </h3>
+          <ul>
+            {bodegas.map((bodega) => (
+              <li key={bodega.folio} className="flex justify-between items-center py-2">
+                <span>{`Folio: ${bodega.folio} - ${bodega.tamano} - ${bodega.edificio}`}</span>
+                <button
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                  onClick={() => handleEdit(bodega)}
+                  disabled={bodega.estado === "ocupada"}
+                >
+                  {bodega.estado === "ocupada" ? "No editable" : "Editar"}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </main>
     </div>
   );
 };
 
-export default VistaBodega;
+export default BodegaGestion;

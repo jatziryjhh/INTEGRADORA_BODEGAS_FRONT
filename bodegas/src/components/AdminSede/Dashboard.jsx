@@ -1,9 +1,7 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import Swal from "sweetalert2";
-import { Link } from "react-router-dom";
-import axios from "axios";
 
-// Simulación de datos
+// Simulación de datos (puedes sustituirlo por datos reales desde API)
 const bodegasSimuladas = [
   { id: "B1", estado: "ocupada", estatusPago: "pagado", precio: 1500, edificio: "A", tamano: "chica", cliente: "Cliente A" },
   { id: "B2", estado: "vacante", estatusPago: "pagado", precio: 0, edificio: "B", tamano: "mediana", cliente: "Cliente B" },
@@ -13,38 +11,9 @@ const bodegasSimuladas = [
 ];
 
 const DashboardAdministrador = () => {
-  const [bodegas, setBodegas] = useState([]);
+  const [bodegas] = useState(bodegasSimuladas);
   const [filtroEdificio, setFiltroEdificio] = useState("");
   const [filtroTamano, setFiltroTamano] = useState("");
-
-  useEffect(() => {
-    const obtenerBodegas = async () => {
-      try {
-        const response = await axios.get("http://localhost:8080/api/bodega/");
-        setBodegas(response.data);
-      } catch (error) {
-        console.error("Error al obtener las bodegas:", error);
-      }
-    };
-    obtenerBodegas();
-  }, []);
-
- 
-  useEffect(() => {
-    axios
-      .get("http://localhost:8080/api/bodegas/") 
-      .then((response) => {
-        setBodegas(response.data);
-      })
-      .catch((error) => {
-        console.error("Error al obtener las bodegas:", error);
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "Hubo un problema al cargar las bodegas.",
-        });
-      });
-  }, []);
 
   const bodegasFiltradas = useMemo(() => {
     return bodegas.filter((b) => {
@@ -58,12 +27,8 @@ const DashboardAdministrador = () => {
     .filter((b) => b.estado === "ocupada" && b.estatusPago === "pagado")
     .reduce((acc, b) => acc + b.precio, 0);
 
-  const ocupadas = bodegasFiltradas.filter(
-    (b) => b.estado === "ocupada"
-  ).length;
-  const vacantes = bodegasFiltradas.filter(
-    (b) => b.estado === "vacante"
-  ).length;
+  const ocupadas = bodegasFiltradas.filter((b) => b.estado === "ocupada").length;
+  const vacantes = bodegasFiltradas.filter((b) => b.estado === "vacante").length;
   const porDesalojar = bodegasFiltradas.filter(
     (b) => b.estado === "ocupada" && b.estatusPago === "impago"
   );
@@ -72,24 +37,12 @@ const DashboardAdministrador = () => {
     return bodegasFiltradas.filter((b) => b.estatusPago === "impago");
   }, [bodegasFiltradas]);
 
-  const notificarCliente = async (idBodega) => {
-    try {
-      await axios.put(`http://localhost:8080/api/bodegas/${idBodega}`, {
-        estatusPago: "pagado", // Actualizamos el estatus de pago
-      });
-      Swal.fire({
-        icon: "info",
-        title: `Notificación enviada`,
-        text: `Se ha notificado al cliente de la bodega ${idBodega}.`,
-      });
-    } catch (error) {
-      console.error("Error al notificar al cliente:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "No se pudo notificar al cliente.",
-      });
-    }
+  const notificarCliente = (idBodega) => {
+    Swal.fire({
+      icon: "info",
+      title: `Notificación enviada`,
+      text: `Se ha notificado al cliente de la bodega ${idBodega}.`,
+    });
   };
 
   return (
@@ -98,56 +51,38 @@ const DashboardAdministrador = () => {
         Dashboard del Administrador
       </h1>
 
-      <div className="flex justify-between items-center mb-8">
-        <div className="flex gap-4">
-          <select
-            className="p-3 rounded-lg border border-gray-300 bg-white font-semibold text-gray-700 focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
-            value={filtroEdificio}
-            onChange={(e) => setFiltroEdificio(e.target.value)}
-          >
-            <option value="">Todos los edificios</option>
-            <option value="A">Edificio A</option>
-            <option value="B">Edificio B</option>
-            <option value="C">Edificio C</option>
-          </select>
-          <select
-            className="p-3 rounded-lg border border-gray-300 bg-white font-semibold text-gray-700 focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
-            value={filtroTamano}
-            onChange={(e) => setFiltroTamano(e.target.value)}
-          >
-            <option value="">Todos los tamaños</option>
-            <option value="chica">Chica</option>
-            <option value="mediana">Mediana</option>
-            <option value="grande">Grande</option>
-          </select>
-        </div>
-
-        <div className="flex gap-4">
-          <Link to="/sedes/vistabodega">
-            <button className="flex items-center justify-center p-3 bg-orange-500 text-white rounded-lg hover:bg-blue-600 transition duration-300">
-              Lista de Bodegas
-            </button>
-          </Link>
-
-          <Link to="/sedes/vistacliente">
-            <button className="flex items-center justify-center p-3 bg-orange-500 text-white rounded-lg hover:bg-blue-600 transition duration-300">
-              Lista de Clientes
-            </button>
-          </Link>
-        </div>
+      {/* Filtros */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+        <select
+          className="p-3 rounded-lg border border-gray-300"
+          value={filtroEdificio}
+          onChange={(e) => setFiltroEdificio(e.target.value)}
+        >
+          <option value="">Todos los edificios</option>
+          <option value="A">Edificio A</option>
+          <option value="B">Edificio B</option>
+          <option value="C">Edificio C</option>
+        </select>
+        <select
+          className="p-3 rounded-lg border border-gray-300"
+          value={filtroTamano}
+          onChange={(e) => setFiltroTamano(e.target.value)}
+        >
+          <option value="">Todos los tamaños</option>
+          <option value="chica">Chica</option>
+          <option value="mediana">Mediana</option>
+          <option value="grande">Grande</option>
+        </select>
       </div>
 
       {/* Métricas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <MetricCard
-          titulo="Ingresos Totales"
-          valor={`$${totalIngresos}`}
-          color="green"
-        />
+        <MetricCard titulo="Ingresos Totales" valor={`$${totalIngresos}`} color="green" />
         <MetricCard titulo="Ocupadas" valor={ocupadas} color="blue" />
         <MetricCard titulo="Vacantes" valor={vacantes} color="yellow" />
       </div>
 
+      {/* Bodegas por desalojar */}
       <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
         <h2 className="text-xl font-semibold text-red-500 mb-4">
           Bodegas por desalojar
@@ -179,6 +114,7 @@ const DashboardAdministrador = () => {
         )}
       </div>
 
+      {/* Clientes por pagar */}
       <div className="bg-white p-6 rounded-xl shadow-lg">
         <h2 className="text-xl font-semibold text-orange-500 mb-4">
           Clientes que faltan por pagar
@@ -193,12 +129,9 @@ const DashboardAdministrador = () => {
                 <div>
                   <p className="font-semibold">Cliente: {bodega.cliente}</p>
                   <p className="text-sm text-gray-600">
-                    Bodega {bodega.id} - Edificio {bodega.edificio} - Tamaño{" "}
-                    {bodega.tamano}
+                    Bodega {bodega.id} - Edificio {bodega.edificio} - Tamaño {bodega.tamano}
                   </p>
-                  <p className="text-sm text-red-500">
-                    Precio: ${bodega.precio}
-                  </p>
+                  <p className="text-sm text-red-500">Precio: ${bodega.precio}</p>
                 </div>
                 <button
                   className="mt-2 sm:mt-0 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"
@@ -210,15 +143,14 @@ const DashboardAdministrador = () => {
             ))}
           </ul>
         ) : (
-          <p className="text-gray-500">
-            Todos los clientes están al día con sus pagos.
-          </p>
+          <p className="text-gray-500">Todos los clientes están al día con sus pagos.</p>
         )}
       </div>
     </div>
   );
 };
 
+// Componente reutilizable para métricas
 const MetricCard = ({ titulo, valor, color }) => {
   const colorClass = {
     green: "text-green-600",
@@ -227,11 +159,9 @@ const MetricCard = ({ titulo, valor, color }) => {
   }[color] || "text-gray-800";
 
   return (
-    <div
-      className={`p-6 bg-${color}-200 rounded-lg shadow-lg text-center text-lg font-semibold ${colorClass[color]}`}
-    >
-      <p>{titulo}</p>
-      <p className="text-2xl font-bold">{valor}</p>
+    <div className="bg-white p-6 rounded-xl shadow-lg">
+      <h2 className="text-lg font-semibold text-gray-700">{titulo}</h2>
+      <p className={`text-2xl font-bold ${colorClass}`}>{valor}</p>
     </div>
   );
 };
