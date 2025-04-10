@@ -1,48 +1,59 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import Login from './components/auth/Login'; // Componente de login existente
-import Dashboard from './components/admin/DashboardSuperAdmin'; // Dashboard principal
-import AdministradoresScreen from './components/admin/AdministradoresScreen'; // Pantalla de administradores
-import SedesScreen from './components/admin/SedesScreen'; // Pantalla de sedes
-import 'bootstrap/dist/css/bootstrap.min.css';
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 
-// Componente para rutas protegidas que verifica el rol
-const ProtectedRoute = ({ element }) => {
-  // En un caso real, obtener el usuario y su rol desde localStorage o tu sistema de autenticación
-  const user = JSON.parse(localStorage.getItem('user')) || { role: 'superadmin' }; // Por defecto para pruebas
-  
-  // Verificar si el usuario está autenticado y es superadmin
-  const isAuthenticated = !!localStorage.getItem('token');
-  const isSuperAdmin = user.role === 'superadmin';
-  
-  // Si está autenticado y es superadmin, mostrar el elemento
-  // Si no, redirigir al login
-  return isAuthenticated && isSuperAdmin ? element : <Navigate to="/login" />;
+// Rutas por rol
+import SedeAdminRoutes from "./routes/SedesAdminRoutes";
+import AdminRoutes from "./routes/AdminRoutes";
+
+// Vistas públicas
+import MainView from "./components/MainPage/MainView";
+import LoginView from "./components/Login/LoginView";
+import RegistrationView from "./components/Registration/RegistrationView";
+import Password from "./components/Registration/Password";
+
+// Contexto (si lo tienes)
+//import { ColorProvider } from "./context/ColorContext";
+
+// Estilos globales
+import "./App.css";
+
+// Simulación del rol actual (puedes cambiarlo según lógica real)
+const userRole = "sede"; // "admin" o "sede"
+
+const AnimatedRoutes = () => {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        {/* Rutas públicas */}
+        <Route path="/" element={<MainView />} />
+        <Route path="/login" element={<LoginView />} />
+        <Route path="/register" element={<RegistrationView />} />
+        <Route path="/lost-password" element={<Password />} />
+
+        {/* Rutas por rol */}
+        {userRole === "admin" && (
+          <Route path="/admin/*" element={<AdminRoutes />} />
+        )}
+        {userRole === "sede" && (
+          <Route path="/sedes/*" element={<SedeAdminRoutes />} />
+        )}
+      </Routes>
+    </AnimatePresence>
+  );
 };
 
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        
-        {/* Rutas protegidas para superadmin */}
-        <Route 
-          path="/" 
-          element={<ProtectedRoute element={<Dashboard />} />} 
-        />
-        <Route 
-          path="/administradores" 
-          element={<ProtectedRoute element={<AdministradoresScreen />} />} 
-        />
-        <Route 
-          path="/sedes" 
-          element={<ProtectedRoute element={<SedesScreen />} />} 
-        />
-        
-        {/* Ruta por defecto - redirige al dashboard si está logueado */}
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
+      <AnimatedRoutes />
     </Router>
   );
 }
