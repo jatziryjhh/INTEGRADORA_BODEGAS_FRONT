@@ -51,9 +51,16 @@ export default function LoginView() {
       localStorage.setItem("rol", data.rol);
       localStorage.setItem("id", data.id);
 
-      navigate("/dashboard"); // Redirigir a dashboard después de login
+      if (data.rol === "SUPERADMINISTRADOR") {
+        navigate("/superadmin/dashboard");
+      } else if (data.rol === "ADMINISTRADOR") {
+        navigate("/admin/dashboard");
+      } else if (data.rol === "CLIENTE") {
+        navigate("/cliente/dashboard");
+      }
+
     } catch (err) {
-      setError(err.message);
+      setError(err.message); // Mostrar errores en caso de fallos
     }
   };
 
@@ -135,4 +142,3 @@ export default function LoginView() {
     </div>
   );
 }
-
