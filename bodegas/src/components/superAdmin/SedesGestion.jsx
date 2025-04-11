@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import Navbar from "./Navbar"; // Asegúrate de importar el Navbar
 
 const SedeGestion = () => {
   const navigate = useNavigate(); // Usamos useNavigate para redirigir si no hay autenticación
@@ -34,7 +35,7 @@ const SedeGestion = () => {
 
         const response = await axios.get("http://localhost:8080/api/sedes/", {
           headers: {
-            Authorization: `Bearer ${token}`, // Enviar el token en la cabecera
+            Authorization: `Token ${token}`, // Enviar el token en la cabecera
           },
         });
 
@@ -124,21 +125,24 @@ const SedeGestion = () => {
 
   return (
     <div className="w-full bg-gray-100 text-gray-800 min-h-screen">
+      {/* Navbar siempre visible */}
+      <Navbar /> {/* Aquí agregamos el Navbar */}
+
       <main className="pt-28 px-6 md:px-12 flex flex-col items-center min-h-screen bg-gray-100">
         <div className="w-full max-w-3xl p-8 bg-white shadow-lg rounded-xl mb-10">
-          <h2 className="text-center text-3xl font-semibold text-teal-600 mb-6">
+          <h2 className="text-center text-3xl font-semibold text-orange-600 mb-6">
             {sedeEdicion ? "Editar Sede" : "Alta de Sede"}
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
             <input
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
               placeholder="Nombre de la sede"
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
             />
             <input
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
               placeholder="Dirección de la sede"
               value={direccion}
               onChange={(e) => setDireccion(e.target.value)}
@@ -147,7 +151,7 @@ const SedeGestion = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
             <input
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
               placeholder="Código Postal"
               type="text"
               value={codigoPostal}
@@ -158,7 +162,7 @@ const SedeGestion = () => {
           <button
             className={`w-full p-3 text-lg rounded-lg transition-all duration-300 ${
               isFormValid() && !sedeEdicion
-                ? "bg-teal-600 hover:bg-teal-700 text-white"
+                ? "bg-orange-600 hover:bg-orange-700 text-white"
                 : "bg-gray-400 text-gray-700 cursor-not-allowed"
             }`}
             disabled={!isFormValid() || sedeEdicion}
@@ -177,7 +181,7 @@ const SedeGestion = () => {
 
         {/* Lista de Sedes */}
         <div className="w-full max-w-3xl p-8 bg-white shadow-lg rounded-xl">
-          <h3 className="text-2xl font-semibold text-teal-600 mb-4">
+          <h3 className="text-2xl font-semibold text-orange-600 mb-4">
             Lista de Sedes
           </h3>
           <div className="space-y-4">
@@ -196,7 +200,7 @@ const SedeGestion = () => {
                       <p className="text-gray-600">{sede.codigoPostal}</p>
                     </div>
                     <button
-                      className="px-4 py-2 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition duration-300"
+                      className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition duration-300"
                       onClick={() => setSedeEdicion(sede)}
                     >
                       Editar
