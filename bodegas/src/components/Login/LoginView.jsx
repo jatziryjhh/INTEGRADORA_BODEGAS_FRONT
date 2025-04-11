@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // Importamos useNavigate para redirigir
 import back from "./img/cop.jpg";
 import media from "./img/media.png";
 import front from "./img/front.png";
 
 const images = [
   front,
-
   "https://todowine.com/wp-content/uploads/2022/03/bodealba-almacen.png",
   "https://png.pngtree.com/png-clipart/20240317/original/pngtree-construction-worker-builder-man-png-image_14611987.png",
   "https://irp.cdn-website.com/9873f9dd/MOBILE/png/896.png",
@@ -14,7 +14,11 @@ const images = [
 ];
 
 export default function LoginView() {
+  const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -23,6 +27,42 @@ export default function LoginView() {
 
     return () => clearInterval(interval); // Limpiar el intervalo cuando el componente se desmonte
   }, []);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError(""); // Limpiar cualquier error previo
+
+    try {
+      const response = await fetch("http://localhost:8080/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Error al iniciar sesión");
+      }
+
+      const data = await response.json();
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("rol", data.rol);
+      localStorage.setItem("id", data.id);
+
+      if (data.rol === "SUPERADMINISTRADOR") {
+        navigate("/superadmin/dashboard");
+      } else if (data.rol === "ADMINISTRADOR") {
+        navigate("/admin/dashboard");
+      } else if (data.rol === "CLIENTE") {
+        navigate("/cliente/dashboard");
+      }
+
+    } catch (err) {
+      setError(err.message); // Mostrar errores en caso de fallos
+    }
+  };
 
   return (
     <div
@@ -42,21 +82,34 @@ export default function LoginView() {
               className="md:h-20 h-8 object-contain mx-auto mb-10"
             />
 
-            {/* El formulario ahora no tiene funcionalidad */}
-            <input
-              type="text"
-              placeholder="Nombre de usuario"
-              className="w-full border border-gray-300 rounded-sm p-2 mb-4 focus:outline-none"
-            />
-            <input
-              type="password"
-              placeholder="Contraseña"
-              className="w-full border border-gray-300 rounded-sm p-2 mb-4 focus:outline-none"
-            />
+            {/* Formulario de login con la lógica integrada */}
+            <form onSubmit={handleLogin}>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Correo electrónico"
+                className="w-full border border-gray-300 rounded-sm p-2 mb-4 focus:outline-none"
+                required
+              />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Contraseña"
+                className="w-full border border-gray-300 rounded-sm p-2 mb-4 focus:outline-none"
+                required
+              />
 
-            <button className="w-full bg-[#FF7700] text-white py-2 rounded-md mb-4 hover:bg-[#a77d4e]">
-              Entrar
-            </button>
+              {error && <p className="text-red-500 text-sm">{error}</p>}
+
+              <button
+                type="submit"
+                className="w-full bg-[#FF7700] text-white py-2 rounded-md mb-4 hover:bg-[#a77d4e]"
+              >
+                Entrar
+              </button>
+            </form>
 
             <div className="text-center mb-6">
               <a
