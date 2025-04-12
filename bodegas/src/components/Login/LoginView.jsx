@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Importamos useNavigate para redirigir
+import { useNavigate } from "react-router-dom";
 import back from "./img/cop.jpg";
 import media from "./img/media.png";
 import front from "./img/front.png";
@@ -23,14 +23,14 @@ export default function LoginView() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 4000); // Cambiar la imagen cada 4 segundos
+    }, 4000);
 
-    return () => clearInterval(interval); // Limpiar el intervalo cuando el componente se desmonte
+    return () => clearInterval(interval);
   }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(""); // Limpiar cualquier error previo
+    setError("");
 
     try {
       const response = await fetch("http://localhost:8080/auth/login", {
@@ -60,7 +60,7 @@ export default function LoginView() {
       }
 
     } catch (err) {
-      setError(err.message); // Mostrar errores en caso de fallos
+      setError(err.message);
     }
   };
 
@@ -82,14 +82,13 @@ export default function LoginView() {
               className="md:h-20 h-8 object-contain mx-auto mb-10"
             />
 
-            {/* Formulario de login con la lógica integrada */}
             <form onSubmit={handleLogin}>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Correo electrónico"
-                className="w-full border border-gray-300 rounded-sm p-2 mb-4 focus:outline-none"
+                className="w-full border border-gray-300 rounded-sm p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-orange-300 text-black"
                 required
               />
               <input
@@ -97,7 +96,7 @@ export default function LoginView() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Contraseña"
-                className="w-full border border-gray-300 rounded-sm p-2 mb-4 focus:outline-none"
+                className="w-full border border-gray-300 rounded-sm p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-orange-300 text-black"
                 required
               />
 
