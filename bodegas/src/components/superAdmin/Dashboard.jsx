@@ -1,4 +1,3 @@
-// DashboardAdministrador.jsx
 import { useState, useMemo, useEffect } from "react";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
@@ -15,19 +14,13 @@ const DashboardAdministrador = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        Swal.fire(
-          "Sesión caducada",
-          "Por favor inicia sesión nuevamente",
-          "warning"
-        );
+        Swal.fire("Sesión caducada", "Por favor inicia sesión nuevamente", "warning");
         navigate("/login");
         return;
       }
 
-      const response = await axios.get("http://localhost:8080/api/bodega/", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const response = await axios.get("http://localhost:8080/api/bodegas/", {
+        headers: { Authorization: `Bearer ${token}` },
       });
       setBodegas(response.data);
     } catch (error) {
@@ -48,17 +41,13 @@ const DashboardAdministrador = () => {
   }, [bodegas, filtroEdificio, filtroTamano]);
 
   const totalIngresos = bodegasFiltradas
-    .filter((b) => b.estado === "ocupada" && b.estatusPago === "pagado")
+    .filter((b) => b.estado === "RENTADA" && b.estatusPago === "DISPONIBLE")
     .reduce((acc, b) => acc + b.precio, 0);
 
-  const ocupadas = bodegasFiltradas.filter(
-    (b) => b.estado === "ocupada"
-  ).length;
-  const vacantes = bodegasFiltradas.filter(
-    (b) => b.estado === "vacante"
-  ).length;
+  const ocupadas = bodegasFiltradas.filter((b) => b.estado === "RENTADA").length;
+  const vacantes = bodegasFiltradas.filter((b) => b.estado === "DISPONIBLE").length;
   const porDesalojar = bodegasFiltradas.filter(
-    (b) => b.estado === "ocupada" && b.estatusPago === "impago"
+    (b) => b.estado === "POR VENCER" && b.estatusPago === "impago"
   );
 
   const clientesImpagos = useMemo(() => {
@@ -69,8 +58,8 @@ const DashboardAdministrador = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        `http://localhost:8080/api/bodega/${idBodega}/`,
-        { estatusPago: "pagado" }, // Esto depende del backend: ¿realmente quieres marcar como pagado al notificar?
+        `http://localhost:8080/api/bodegas/${idBodega}/`,
+        { estatusPago: "pagado" },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -84,7 +73,6 @@ const DashboardAdministrador = () => {
         text: `Se ha notificado al cliente de la bodega ${idBodega}.`,
       });
 
-      // Refrescar datos
       obtenerBodegas();
     } catch (error) {
       console.error("Error al notificar al cliente:", error);
@@ -100,7 +88,6 @@ const DashboardAdministrador = () => {
     <div className="min-h-screen bg-gray-100">
       <Navbar />
 
-      {/* Contenedor principal con padding y espacio superior */}
       <div className="pt-24 px-4 pb-8 w-full">
         {/* Filtros */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 mt-2">
@@ -129,24 +116,16 @@ const DashboardAdministrador = () => {
           </div>
         </div>
 
-        {/* Métricas, tarjetas, etc... */}
-
         {/* Métricas */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <MetricCard
-            titulo="Ingresos Totales"
-            valor={`$${totalIngresos}`}
-            color="green"
-          />
+          <MetricCard titulo="Ingresos Totales" valor={`$${totalIngresos}`} color="green" />
           <MetricCard titulo="Ocupadas" valor={ocupadas} color="blue" />
           <MetricCard titulo="Vacantes" valor={vacantes} color="yellow" />
         </div>
 
         {/* Bodegas por desalojar */}
         <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
-          <h2 className="text-xl font-semibold text-red-500 mb-4">
-            Bodegas por desalojar
-          </h2>
+          <h2 className="text-xl font-semibold text-red-500 mb-4">Bodegas por desalojar</h2>
           {porDesalojar.length > 0 ? (
             <ul className="space-y-3">
               {porDesalojar.map((bodega) => (
@@ -175,7 +154,7 @@ const DashboardAdministrador = () => {
         </div>
 
         {/* Clientes que faltan por pagar */}
-        <div className="bg-white p-6 rounded-xl shadow-lg">
+        <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
           <h2 className="text-xl font-semibold text-orange-500 mb-4">
             Clientes que faltan por pagar
           </h2>
@@ -189,12 +168,9 @@ const DashboardAdministrador = () => {
                   <div>
                     <p className="font-semibold">Cliente: {bodega.cliente}</p>
                     <p className="text-sm text-gray-600">
-                      Bodega {bodega.id} - Edificio {bodega.edificio} - Tamaño{" "}
-                      {bodega.tamano}
+                      Bodega {bodega.id} - Edificio {bodega.edificio} - Tamaño {bodega.tamano}
                     </p>
-                    <p className="text-sm text-red-500">
-                      Precio: ${bodega.precio}
-                    </p>
+                    <p className="text-sm text-red-500">Precio: ${bodega.precio}</p>
                   </div>
                   <button
                     className="mt-2 sm:mt-0 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"
@@ -209,6 +185,35 @@ const DashboardAdministrador = () => {
             <p className="text-gray-500">
               Todos los clientes están al día con sus pagos.
             </p>
+          )}
+        </div>
+
+        {/* Lista de todas las bodegas filtradas */}
+        <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
+          <h2 className="text-xl font-semibold text-blue-500 mb-4">Listado de Bodegas</h2>
+          {bodegasFiltradas.length > 0 ? (
+            <ul className="space-y-3">
+              {bodegasFiltradas.map((bodega) => (
+                <li
+                  key={bodega.id}
+                  className="flex flex-col sm:flex-row sm:justify-between sm:items-center p-4 border rounded-lg bg-gray-50"
+                >
+                  <div>
+                    <p className="font-semibold text-gray-800">
+                      Bodega #{bodega.id} - Edificio {bodega.edificio}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Tamaño: {bodega.tamano} | Estado: {bodega.estado} | Pago: {bodega.estatusPago}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Cliente: {bodega.cliente?.nombre || "No registrado"} | Precio: ${bodega.precio}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-500">No hay bodegas con los filtros aplicados.</p>
           )}
         </div>
       </div>

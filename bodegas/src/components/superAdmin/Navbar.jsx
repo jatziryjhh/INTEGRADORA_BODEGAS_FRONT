@@ -40,6 +40,12 @@ const Navbar = () => {
           >
             Administradores
           </Link>
+          <Link
+            to="/superadmin/bitacora"
+            className="text-white hover:text-orange-200"
+          >
+            Bitacora
+          </Link>
         </div>
       </div>
     </nav>

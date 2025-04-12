@@ -23,7 +23,7 @@ const ListaBodegas = () => {
     axios
       .get("http://localhost:8080/api/bodegas/", {
         headers: {
-          Authorization: `Token ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
