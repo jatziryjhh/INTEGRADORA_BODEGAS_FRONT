@@ -164,34 +164,108 @@ const ListaBodegas = () => {
       {/* Modal de edición */}
       {showModal && bodegaSeleccionada && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
-            <h3 className="text-2xl font-semibold mb-4">Editar Estado de Bodega</h3>
-            <div>
-              <h4 className="font-bold text-lg mb-2">{bodegaSeleccionada.folio}</h4>
-              <p>Estado actual: {bodegaSeleccionada.status}</p>
-              <div className="mt-4">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
+            <h3 className="text-black text-2xl font-semibold mb-4">Editar Bodega</h3>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const token = localStorage.getItem("token");
+                if (!token) return;
+
+                axios
+                  .put(
+                    `http://localhost:8080/api/bodegas/${bodegaSeleccionada.id}`,
+                    bodegaSeleccionada,
+                    {
+                      headers: {
+                        Authorization: `Bearer ${token}`,
+                      },
+                    }
+                  )
+                  .then(() => {
+                    Swal.fire("Éxito", "Bodega actualizada correctamente", "success");
+                    setBodegas((prev) =>
+                      prev.map((b) =>
+                        b.uuid === bodegaSeleccionada.uuid ? bodegaSeleccionada : b
+                      )
+                    );
+                    handleCloseModal();
+                  })
+                  .catch((error) => {
+                    console.error("Error al actualizar:", error);
+                    Swal.fire("Error", "Hubo un problema al actualizar la bodega", "error");
+                  });
+              }}
+            >
+              <div className="space-y-3">
+                <div>
+                  <label className="text-black block font-semibold">Tipo</label>
+                  <input
+                    type="text"
+                    value={bodegaSeleccionada.tipo}
+                    onChange={(e) =>
+                      setBodegaSeleccionada({ ...bodegaSeleccionada, tipo: e.target.value })
+                    }
+                    className= "text-gray-600 w-full p-2 border rounded"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-black block font-semibold">Precio</label>
+                  <input
+                    type="number"
+                    value={bodegaSeleccionada.precio}
+                    onChange={(e) =>
+                      setBodegaSeleccionada({ ...bodegaSeleccionada, precio: e.target.value })
+                    }
+                    className="text-gray-600 w-full p-2 border rounded"
+                  />
+                </div>
+
+                <div>
+                  <label className=" text-black block font-semibold">Tamaño</label>
+                  <input
+                    type="text"
+                    value={bodegaSeleccionada.tamano}
+                    onChange={(e) =>
+                      setBodegaSeleccionada({ ...bodegaSeleccionada, tamano: e.target.value })
+                    }
+                    className="text-gray-600 w-full p-2 border rounded"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-black block font-semibold">Estado</label>
+                  <select
+                    value={bodegaSeleccionada.status}
+                    onChange={(e) =>
+                      setBodegaSeleccionada({ ...bodegaSeleccionada, status: e.target.value })
+                    }
+                    className="text-gray-600 w-full p-2 border rounded"
+                  >
+                    <option value="DISPONIBLE">Disponible</option>
+                    <option value="RENTADA">Rentada</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end gap-3">
                 <button
-                  onClick={() => handleStatusChange("DISPONIBLE")}
-                  className="bg-green-500 text-white py-2 px-4 rounded-md mr-2"
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="bg-gray-600 text-white px-4 py-2 rounded-md"
                 >
-                  Marcar como Disponible
+                  Cancelar
                 </button>
                 <button
-                  onClick={() => handleStatusChange("RENTADA")}
-                  className="bg-orange-500 text-white py-2 px-4 rounded-md"
+                  type="submit"
+                  className="bg-orange-500 text-white hover:bg-orange-600 px-4 py-2 rounded-md"
                 >
-                  Marcar como Rentada
+                  Guardar cambios
                 </button>
               </div>
-            </div>
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={handleCloseModal}
-                className="bg-gray-400 text-white py-2 px-4 rounded-md"
-              >
-                Cerrar
-              </button>
-            </div>
+            </form>
           </div>
         </div>
       )}

@@ -19,7 +19,7 @@ const SedeGestion = () => {
     direccion: "",
     administrador: "",
   });
-  
+
   // Guardar el token, rol e id del usuario
   const [userData, setUserData] = useState({
     token: localStorage.getItem("token"),
@@ -32,7 +32,7 @@ const SedeGestion = () => {
   const DIRECCION_REGEX = "^(?!\\s*$)[A-ZÁÉÍÓÚÑa-záéíóúñ]+(?: [A-ZÁÉÍÓÚÑa-záéíóúñ]+)*$";
   //const ADMINISTRADOR_REGEX = "^(?!\\s*$)[A-ZÁÉÍÓÚÑa-záéíóúñ]+(?: [A-ZÁÉÍÓÚÑa-záéíóúñ]+){0,49}$";
   const STATUS_REGEX = "DISPONIBLE|RENTADA|POR VENCER|VENCIDA";
-  
+
   useEffect(() => {
     const obtenerSedesYAdministradores = async () => {
       if (!userData.token || !userData.rol || !userData.id) {
@@ -196,6 +196,7 @@ const SedeGestion = () => {
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+            {/* Campo Nombre */}
             <div>
               <input
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
@@ -204,12 +205,18 @@ const SedeGestion = () => {
                 onChange={(e) => handleChange(e, "nombre")}
               />
               {formErrors.nombre && (
-                <p className="text-red-500 text-sm">{formErrors.nombre}</p>
+                <p className="text-red-500 text-sm flex items-center gap-2 mt-1">
+                  ❌ {formErrors.nombre}
+                </p>
               )}
               {!formErrors.nombre && nombre && (
-                <span className="text-green-500">✔</span>
+                <p className="text-green-600 text-sm flex items-center gap-2 mt-1">
+                  ✅ Nombre válido
+                </p>
               )}
             </div>
+
+            {/* Campo Dirección */}
             <div>
               <input
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
@@ -218,14 +225,19 @@ const SedeGestion = () => {
                 onChange={(e) => handleChange(e, "direccion")}
               />
               {formErrors.direccion && (
-                <p className="text-red-500 text-sm">{formErrors.direccion}</p>
+                <p className="text-red-500 text-sm flex items-center gap-2 mt-1">
+                  ❌ {formErrors.direccion}
+                </p>
               )}
               {!formErrors.direccion && direccion && (
-                <span className="text-green-500">✔</span>
+                <p className="text-green-600 text-sm flex items-center gap-2 mt-1">
+                  ✅ Dirección válida
+                </p>
               )}
             </div>
           </div>
 
+          {/* Campo Administrador */}
           <div className="mb-6">
             <select
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
@@ -240,19 +252,22 @@ const SedeGestion = () => {
               ))}
             </select>
             {formErrors.administrador && (
-              <p className="text-red-500 text-sm">{formErrors.administrador}</p>
+              <p className="text-red-500 text-sm flex items-center gap-2 mt-1">
+                ❌ {formErrors.administrador}
+              </p>
             )}
             {!formErrors.administrador && administrador && (
-              <span className="text-green-500">✔</span>
+              <p className="text-green-600 text-sm flex items-center gap-2 mt-1">
+                ✅ Administrador seleccionado
+              </p>
             )}
           </div>
 
           <button
-            className={`w-full p-3 text-lg rounded-lg transition-all duration-300 ${
-              isFormValid()
+            className={`w-full p-3 text-lg rounded-lg transition-all duration-300 ${isFormValid()
                 ? "bg-orange-600 hover:bg-orange-700 text-white"
                 : "bg-gray-400 text-gray-700 cursor-not-allowed"
-            }`}
+              }`}
             onClick={handleSubmit}
             disabled={!isFormValid()}
           >

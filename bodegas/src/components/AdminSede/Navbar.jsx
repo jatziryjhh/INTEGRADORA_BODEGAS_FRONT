@@ -1,4 +1,3 @@
-// src/components/AdminSede/Navbar.jsx
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Home, Box, User, PlusSquare, LogOut } from "lucide-react";
@@ -26,7 +25,6 @@ const Navbar = () => {
             to="/admin/dashboard"
             className="text-white flex items-center hover:text-orange-200"
           >
-            <Home className="w-5 h-5 mr-2" />
             Dashboard
           </Link>
 
@@ -34,7 +32,6 @@ const Navbar = () => {
             to="/admin/bodegas"
             className="text-white flex items-center hover:text-orange-200"
           >
-            <Box className="w-5 h-5 mr-2" />
             Ver Bodegas
           </Link>
 
@@ -42,7 +39,6 @@ const Navbar = () => {
             to="/admin/gestion"
             className="text-white flex items-center hover:text-orange-200"
           >
-            <PlusSquare className="w-5 h-5 mr-2" />
             Agregar Bodega
           </Link>
 
@@ -50,7 +46,6 @@ const Navbar = () => {
             to="/admin/clientes"
             className="text-white flex items-center hover:text-orange-200"
           >
-            <User className="w-5 h-5 mr-2" />
             Clientes
           </Link>
 
@@ -58,7 +53,6 @@ const Navbar = () => {
             onClick={handleLogout}
             className="text-white flex items-center hover:text-orange-200"
           >
-            <LogOut className="w-5 h-5 mr-2" />
             Cerrar sesión
           </button>
         </div>
