@@ -1,15 +1,23 @@
 // Navbar.jsx
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("usuario");
+    navigate("/login");
+  };
+
   return (
     <nav className="bg-orange-600 p-4 shadow-md">
       <div className="flex justify-between items-center container mx-auto">
         <Link to="/dashboard" className="text-white text-2xl font-semibold">
           Dashboard
         </Link>
-        <div className="space-x-6">
+        <div className="space-x-6 flex items-center">
           <Link
             to="/superadmin/dashboard"
             className="text-white hover:text-orange-200"
@@ -46,6 +54,12 @@ const Navbar = () => {
           >
             Bitacora
           </Link>
+          <button
+            onClick={handleLogout}
+            className="text-white hover:text-orange-200"
+          >
+            Cerrar sesión
+          </button>
         </div>
       </div>
     </nav>
