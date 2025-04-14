@@ -30,7 +30,7 @@ const SedeGestion = () => {
   // Expresiones regulares para validación
   const NOMBRE_REGEX = "^(?! )[A-ZÁÉÍÓÚÑa-záéíóúñ]+(?: [A-ZÁÉÍÓÚÑa-záéíóúñ]+){0,49}$";
   const DIRECCION_REGEX = "^(?!\\s*$)[A-ZÁÉÍÓÚÑa-záéíóúñ]+(?: [A-ZÁÉÍÓÚÑa-záéíóúñ]+)*$";
-  const ADMINISTRADOR_REGEX = "^(?!\\s*$)[A-ZÁÉÍÓÚÑa-záéíóúñ]+(?: [A-ZÁÉÍÓÚÑa-záéíóúñ]+){0,49}$";
+  //const ADMINISTRADOR_REGEX = "^(?!\\s*$)[A-ZÁÉÍÓÚÑa-záéíóúñ]+(?: [A-ZÁÉÍÓÚÑa-záéíóúñ]+){0,49}$";
   const STATUS_REGEX = "DISPONIBLE|RENTADA|POR VENCER|VENCIDA";
   
   useEffect(() => {
@@ -81,9 +81,9 @@ const SedeGestion = () => {
       errorMessage = "Nombre inválido.";
     } else if (field === "direccion" && !new RegExp(DIRECCION_REGEX).test(value)) {
       errorMessage = "Dirección inválida.";
-    } else if (field === "administrador" && !new RegExp(ADMINISTRADOR_REGEX).test(value)) {
+    } /* else if (field === "administrador" && !new RegExp(ADMINISTRADOR_REGEX).test(value)) {
       errorMessage = "Administrador inválido.";
-    }
+    } */
     setFormErrors((prev) => ({
       ...prev,
       [field]: errorMessage

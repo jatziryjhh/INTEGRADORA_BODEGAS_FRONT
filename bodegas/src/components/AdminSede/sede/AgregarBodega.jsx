@@ -8,7 +8,7 @@ const AgregarBodega = () => {
   const [folio, setFolio] = useState("");
   const [precio, setPrecio] = useState("");
   const [tipo, setTipo] = useState(""); // Tipo de bodega
-  const [status, setStatus] = useState("true"); // Estado de la bodega
+  const [status, setStatus] = useState("DISPONIBLE"); // Estado de la bodega
   const [tamano, setTamano] = useState("");
   const [edificio, setEdificio] = useState("");
   const [sede, setSede] = useState(""); // Sede
@@ -42,7 +42,7 @@ const AgregarBodega = () => {
   }, []);
 
   const isFormValid = () =>
-    folio && precio && tipo && tamano && edificio && sede;
+    folio && precio && tipo && status && tamano && edificio && sede;
 
   const handleSubmit = async () => {
     if (!isFormValid()) {
@@ -53,7 +53,15 @@ const AgregarBodega = () => {
       });
     }
 
-    const nuevaBodega = { folio, precio, tipo, status, tamano, edificio, sede };
+    const nuevaBodega = {
+      folio,
+      precio,
+      tipo,
+      status,
+      tamano,
+      edificio,
+      sede: { id: parseInt(sede) } 
+    };
 
     try {
       if (bodegaEdicion) {
@@ -68,9 +76,16 @@ const AgregarBodega = () => {
       } else {
         const response = await axios.post(
           "http://localhost:8080/api/bodegas/crear/",
-          nuevaBodega
+          nuevaBodega,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
         );
         setBodegas([...bodegas, response.data]);
+        console.log("Bodega creada:", response.data); 
         Swal.fire({
           icon: "success",
           title: "Bodega registrada",
@@ -111,13 +126,13 @@ const AgregarBodega = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <input
-              className="p-3 border border-gray-300 rounded-lg"
+              className="text-black p-3 border border-gray-300 rounded-lg"
               placeholder="Folio (Ej: B32)"
               value={folio}
               onChange={(e) => setFolio(e.target.value)}
             />
             <input
-              className="p-3 border border-gray-300 rounded-lg"
+              className=" text-black p-3 border border-gray-300 rounded-lg"
               type="number"
               placeholder="Precio"
               value={precio}
@@ -127,31 +142,31 @@ const AgregarBodega = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <input
-              className="p-3 border border-gray-300 rounded-lg"
+              className="text-black p-3 border border-gray-300 rounded-lg"
               placeholder="Tipo de Bodega (Ej: Oficina, Almacen)"
               value={tipo}
               onChange={(e) => setTipo(e.target.value)}
             />
             <select
-              className="p-3 border border-gray-300 rounded-lg"
+              className="text-black p-3 border border-gray-300 rounded-lg"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
             >
-              <option value="true">DISPONIBLE</option>
-              <option value="false">RENTADA</option>
+              <option value="DISPONIBLE">DISPONIBLE</option>
+              <option value="RENTADA">RENTADA</option>
             </select>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <input
-              className="p-3 border border-gray-300 rounded-lg"
+              className="text-black p-3 border border-gray-300 rounded-lg"
               placeholder="Tamaño"
               value={tamano}
               onChange={(e) => setTamano(e.target.value)}
             />
 
             <select
-              className="p-3 border border-gray-300 rounded-lg"
+              className="text-black p-3 border border-gray-300 rounded-lg"
               value={sede}
               onChange={(e) => setSede(e.target.value)}
             >
@@ -165,7 +180,7 @@ const AgregarBodega = () => {
           </div>
 
           <input
-            className="w-full p-3 border border-gray-300 rounded-lg mb-6"
+            className="text-black w-full p-3 border border-gray-300 rounded-lg mb-6"
             placeholder="Edificio (Ej: A, B, C)"
             value={edificio}
             onChange={(e) => setEdificio(e.target.value)}

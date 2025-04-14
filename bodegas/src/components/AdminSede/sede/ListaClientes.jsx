@@ -107,8 +107,8 @@ const ListaClientes = () => {
                     {clientes.length > 0 ? (
                       clientes.map((cliente) => (
                         <tr key={cliente.id} className="border-b hover:bg-gray-50">
-                          <td className="py-2 px-4">{cliente.nombre} {cliente.apellidoPaterno} {cliente.apellidoMaterno}</td>
-                          <td className="py-2 px-4">{cliente.email}</td>
+                          <td className="text-black py-2 px-4">{cliente.nombre} {cliente.apellidoPaterno} {cliente.apellidoMaterno}</td>
+                          <td className="text-black py-2 px-4">{cliente.email}</td>
                           <td className="py-2 px-4">
                             {cliente.status === "habilitado" ? (
                               <span className="text-green-600">Habilitado</span>
