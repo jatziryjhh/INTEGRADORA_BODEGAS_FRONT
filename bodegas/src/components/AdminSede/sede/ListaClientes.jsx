@@ -1,110 +1,158 @@
-import { useState } from "react";
-import { Menu, LogOut, Plus, Edit } from "lucide-react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
+import Navbar from "../Navbar";
 
-const VistaCliente = () => {
-  const [clientes, setClientes] = useState([
-    {
-      id: 1,
-      nombre: "Juan Pérez",
-      email: "juan@example.com",
-      estado: "Activo",
-      bodegas: [
-        { folio: "B1", estadoPago: "Pagado", tamano: "Mediana", edificio: "A" },
-        { folio: "B2", estadoPago: "No Pagado", tamano: "Grande", edificio: "B" },
-      ],
-    },
-    {
-      id: 2,
-      nombre: "María López",
-      email: "maria@example.com",
-      estado: "Inactivo",
-      bodegas: [
-        { folio: "B3", estadoPago: "Pagado", tamano: "Chica", edificio: "C" },
-      ],
-    },
-  ]);
+const ListaClientes = () => {
+  const navigate = useNavigate();
+  const [clientes, setClientes] = useState([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const handleNewCliente = () => {
-    window.location.href = "/sedes/gestioncliente";
-  };
+  useEffect(() => {
+    const obtenerClientes = async () => {
+      const token = localStorage.getItem("token");
+      const rol = localStorage.getItem("rol");
+      const id = localStorage.getItem("id");
 
-  const handleGoToAnotherPage = () => {
-    window.location.href = "/sedes/dashboard"; 
+      if (!token || !rol || !id) {
+        setError("No estás autenticado. Por favor, inicia sesión.");
+        navigate("/login");
+        return;
+      }
+
+      try {
+        const response = await axios.get("http://localhost:8080/api/usuarios/", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const soloClientes = response.data.filter((usuario) => usuario.rol === "CLIENTE");
+        setClientes(soloClientes);
+      } catch (error) {
+        console.error("Error al obtener los clientes:", error);
+        setError("Error al obtener los clientes");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    obtenerClientes();
+  }, [navigate]);
+
+  const handleStatusChange = (cliente) => {
+    const token = localStorage.getItem("token");
+
+    if (!token) return;
+
+    const nuevoStatus = cliente.status === "habilitado" ? "inhabilitado" : "habilitado";
+
+    axios
+      .put(
+        `http://localhost:8080/api/usuarios/${cliente.id}`,
+        { ...cliente, status: nuevoStatus },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      .then((response) => {
+        Swal.fire("Éxito", "Estado actualizado correctamente", "success");
+        setClientes((prevClientes) =>
+          prevClientes.map((c) =>
+            c.id === cliente.id ? { ...c, status: nuevoStatus } : c
+          )
+        );
+      })
+      .catch((error) => {
+        console.error("Error al actualizar el estado:", error);
+        Swal.fire("Error", "Hubo un problema al actualizar el estado", "error");
+      });
   };
 
   return (
-    <div className="flex flex-col min-h-screen w-screen bg-white overflow-hidden">
-      <nav className="bg-orange-500 text-white p-4 flex justify-between items-center w-full shadow-md fixed top-0 left-0 z-50">
-        <div className="text-lg font-bold">LOGO</div>
-        <div className="space-x-4 flex">
-          <Menu className="cursor-pointer" />
-          <LogOut className="cursor-pointer" />
-        </div>
-      </nav>
+    <div className="min-h-screen bg-gray-100">
+      {/* Navbar */}
+      <Navbar />
 
-      <div className="flex flex-col items-center justify-center flex-1 w-full min-h-screen bg-white pt-20 px-4 md:px-6">
-        <div className="w-full max-w-5xl bg-white p-6 md:p-8 rounded-lg shadow-lg border border-gray-200">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-semibold text-gray-800">Clientes</h1>
-            <button
-              className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center hover:bg-orange-600"
-              onClick={handleNewCliente} // Redirige directamente
-            >
-              <Plus className="w-5 h-5 mr-2" /> Nuevo
-            </button>
-          </div>
+      <div className="pt-24 px-6 md:px-12 max-w-6xl mx-auto">
+        {/* Loading */}
+        {loading ? (
+          <div className="text-center py-12 text-gray-600 text-lg">Cargando clientes...</div>
+        ) : error ? (
+          <div className="text-center text-red-500">{error}</div>
+        ) : (
+          <>
+            <div className="mb-10">
+              <h2 className="text-3xl font-semibold text-orange-600">Lista de Clientes</h2>
+            </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse border border-gray-300 rounded-lg">
-              <thead>
-                <tr className="bg-orange-500 text-white">
-                  <th className="p-3 border border-gray-300">ID</th>
-                  <th className="p-3 border border-gray-300">Nombre</th>
-                  <th className="p-3 border border-gray-300">Email</th>
-                  <th className="p-3 border border-gray-300">Estado</th>
-                  <th className="p-3 border border-gray-300">Bodegas Rentadas</th>
-                  <th className="p-3 border border-gray-300">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {clientes.map((cliente) => (
-                  <tr key={cliente.id} className="text-gray-800 text-center">
-                    <td className="p-3 border border-gray-300">{cliente.id}</td>
-                    <td className="p-3 border border-gray-300">{cliente.nombre}</td>
-                    <td className="p-3 border border-gray-300">{cliente.email}</td>
-                    <td className="p-3 border border-gray-300">{cliente.estado}</td>
-                    <td className="p-3 border border-gray-300">
-                      <ul className="space-y-2">
-                        {cliente.bodegas.map((bodega, index) => (
-                          <li key={index}>
-                            <span>{`Folio: ${bodega.folio} - ${bodega.tamano} - ${bodega.edificio} - ${bodega.estadoPago}`}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </td>
-                    <td className="p-3 border border-gray-300">
-                      <button className="bg-blue-500 text-white px-3 py-1 rounded-lg flex items-center hover:bg-blue-600">
-                        <Edit className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        
-        <button
-          onClick={handleGoToAnotherPage}
-          className="mt-6 px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all duration-300"
-        >
-          Ir al menu de administración
-        </button>
+            {/* Lista de Clientes */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <div className="overflow-x-auto">
+                <table className="min-w-full bg-white border-collapse border border-gray-300 rounded-lg">
+                  <thead>
+                    <tr className="bg-orange-500 text-white">
+                      <th className="py-2 px-4 text-left text-gray-600">Nombre</th>
+                      <th className="py-2 px-4 text-left text-gray-600">Correo</th>
+                      <th className="py-2 px-4 text-left text-gray-600">Estado</th>
+                      <th className="py-2 px-4 text-left text-gray-600">Pagos Pendientes</th>
+                      <th className="py-2 px-4 text-left text-gray-600">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {clientes.length > 0 ? (
+                      clientes.map((cliente) => (
+                        <tr key={cliente.id} className="border-b hover:bg-gray-50">
+                          <td className="py-2 px-4">{cliente.nombre} {cliente.apellidoPaterno} {cliente.apellidoMaterno}</td>
+                          <td className="py-2 px-4">{cliente.email}</td>
+                          <td className="py-2 px-4">
+                            {cliente.status === "habilitado" ? (
+                              <span className="text-green-600">Habilitado</span>
+                            ) : (
+                              <span className="text-red-600">Inhabilitado</span>
+                            )}
+                          </td>
+                          <td className="py-2 px-4">
+                            {cliente.pagosPendientes > 0 ? (
+                              <span className="text-red-600">{cliente.pagosPendientes} Pago(s) Pendiente(s)</span>
+                            ) : (
+                              <span className="text-green-600">Al corriente</span>
+                            )}
+                          </td>
+                          <td className="py-2 px-4">
+                            <button
+                              onClick={() => handleStatusChange(cliente)}
+                              className={`px-4 py-2 rounded-lg ${
+                                cliente.status === "habilitado"
+                                  ? "bg-red-500 text-white hover:bg-red-600"
+                                  : "bg-green-500 text-white hover:bg-green-600"
+                              }`}
+                            >
+                              {cliente.status === "habilitado" ? "Deshabilitar" : "Habilitar"}
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="5" className="text-center py-4 text-gray-500">
+                          No hay clientes registrados.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
 };
 
-export default VistaCliente;
+export default ListaClientes;

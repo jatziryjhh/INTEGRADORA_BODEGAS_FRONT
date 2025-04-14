@@ -19,22 +19,23 @@ const SedeGestion = () => {
     direccion: "",
     administrador: "",
   });
+  
+  // Guardar el token, rol e id del usuario
+  const [userData, setUserData] = useState({
+    token: localStorage.getItem("token"),
+    rol: localStorage.getItem("rol"),
+    id: localStorage.getItem("id"),
+  });
 
   // Expresiones regulares para validación
-  const NOMBRE_REGEX =
-    "^(?!\\s*$)[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]+(?: [a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]+)*$";
-  const DIRECCION_REGEX =
-    "^(?!\\s*$)[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ.,\\-]+(?: [a-zA-Z0-9áéíóúÁÉÍÓÚñÑ.,\\-]+)*$";
-  const ADMINISTRADOR_REGEX =
-    "^(?!\\s*$)[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]+(?: [a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]+)*$";
-
+  const NOMBRE_REGEX = "^(?! )[A-ZÁÉÍÓÚÑa-záéíóúñ]+(?: [A-ZÁÉÍÓÚÑa-záéíóúñ]+){0,49}$";
+  const DIRECCION_REGEX = "^(?!\\s*$)[A-ZÁÉÍÓÚÑa-záéíóúñ]+(?: [A-ZÁÉÍÓÚÑa-záéíóúñ]+)*$";
+  const ADMINISTRADOR_REGEX = "^(?!\\s*$)[A-ZÁÉÍÓÚÑa-záéíóúñ]+(?: [A-ZÁÉÍÓÚÑa-záéíóúñ]+){0,49}$";
+  const STATUS_REGEX = "DISPONIBLE|RENTADA|POR VENCER|VENCIDA";
+  
   useEffect(() => {
     const obtenerSedesYAdministradores = async () => {
-      const token = localStorage.getItem("token");
-      const rol = localStorage.getItem("rol");
-      const id = localStorage.getItem("id");
-
-      if (!token || !rol || !id) {
+      if (!userData.token || !userData.rol || !userData.id) {
         setError("No estás autenticado. Por favor, inicia sesión.");
         navigate("/login");
         return;
@@ -44,20 +45,17 @@ const SedeGestion = () => {
         // Obtener las sedes
         const sedeResponse = await axios.get("http://localhost:8080/api/sedes/", {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${userData.token}`,
           },
         });
         setSedes(sedeResponse.data);
 
         // Obtener los administradores
-        const usersResponse = await axios.get(
-          "http://localhost:8080/api/usuarios/", 
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const usersResponse = await axios.get("http://localhost:8080/api/usuarios/", {
+          headers: {
+            Authorization: `Bearer ${userData.token}`,
+          },
+        });
         const admins = usersResponse.data.filter((user) => user.rol === "ADMINISTRADOR");
         setAdministradores(admins);
 
@@ -68,7 +66,7 @@ const SedeGestion = () => {
     };
 
     obtenerSedesYAdministradores();
-  }, [navigate]);
+  }, [navigate, userData]);
 
   // Función para manejar los cambios en el formulario
   const handleChange = (e, field) => {
@@ -104,8 +102,6 @@ const SedeGestion = () => {
   };
 
   const handleSubmit = async () => {
-    const token = localStorage.getItem("token");
-
     if (!isFormValid()) {
       Swal.fire({
         icon: "error",
@@ -130,7 +126,7 @@ const SedeGestion = () => {
           { ...sedeEdicion, ...sedeData },
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${userData.token}`,
             },
           }
         );
@@ -153,7 +149,7 @@ const SedeGestion = () => {
           sedeData,
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${userData.token}`,
             },
           }
         );
