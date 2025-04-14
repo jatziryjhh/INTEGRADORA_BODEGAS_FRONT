@@ -5,6 +5,7 @@ import { AnimatePresence } from "framer-motion";
 // Importar rutas para cada rol
 import AdminRoutes from "./routes/AdminRoutes";
 import SedesAdminRoutes from "./routes/SedesAdminRoutes";
+import ClienteRoutes from "./routes/ClienteRoutes";
 // Vistas públicas
 import MainView from "./components/MainPage/MainView";
 import LoginView from "./components/Login/LoginView";
@@ -27,7 +28,7 @@ const App = () => {
           {/* Rutas privadas según el rol */}
           <Route path="/superadmin/*" element={<AdminRoutes />} />
           <Route path="/admin/*" element={<SedesAdminRoutes />} />
-          {/* <Route path="/cliente/dashboard/*" element={<ClienteRoutes />} />*/}
+          <Route path="/cliente/*" element={<ClienteRoutes />} />        
         </Routes>
       </AnimatePresence>
     </Router>

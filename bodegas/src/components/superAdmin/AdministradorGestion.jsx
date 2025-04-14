@@ -4,6 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import { FaTrashAlt } from "react-icons/fa";
+import ValidacionCampo from "./ValidacionCampo";
 
 const AdministradorGestion = () => {
   const navigate = useNavigate();
@@ -21,6 +22,23 @@ const AdministradorGestion = () => {
   const [rol, setRol] = useState("user");
   const [usuarioEdicion, setUsuarioEdicion] = useState(null);
   const [error, setError] = useState("");
+
+  const patrones = {
+    EMAIL: /^(?!\s*$)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+    PASSWORD: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+    TELEFONO: /^(?!\s*$)\d{10}$/,
+    RFC: /^(?!\s*$)[A-ZÑ&]{3,4}\d{6}[A-Z\d]{3}$/,
+    CODIGOPOS: /^(?!\s*$)\d{5}$/,
+    NOMBRE: /^(?!\s*$)(?=.{2,50}$)[A-ZÁÉÍÓÚÑa-záéíóúñ]+(?: [A-ZÁÉÍÓÚÑa-záéíóúñ]+)*$/,
+    APELLIDOPATERNO: /^(?!\s*$)(?=.{2,50}$)[A-ZÁÉÍÓÚÑa-záéíóúñ]+(?: [A-ZÁÉÍÓÚÑa-záéíóúñ]+)*$/,
+    APELLIDOMATERNO: /^(?!\s*$)(?=.{2,50}$)[A-ZÁÉÍÓÚÑa-záéíóúñ]+(?: [A-ZÁÉÍÓÚÑa-záéíóúñ]+)*$/,
+    DIRECCION: /^(?!\s*$)(?=.{5,100}$)[A-ZÁÉÍÓÚÑa-záéíóúñ0-9#.,\-]+(?: [A-ZÁÉÍÓÚÑa-záéíóúñ0-9#.,\-]+)*$/
+  };
+
+  const validar = (valor, campo) => {
+    if (!valor.trim()) return false;
+    return patrones[campo].test(valor);
+  };
 
   useEffect(() => {
     const obtenerUsuarios = async () => {
@@ -199,63 +217,87 @@ const AdministradorGestion = () => {
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-            <input
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-              placeholder="Nombre"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-            />
-            <input
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-              placeholder="Apellido Paterno"
-              value={apellidoPaterno}
-              onChange={(e) => setApellidoPaterno(e.target.value)}
-            />
+            <div>
+              <input
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                placeholder="Nombre"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+              />
+              <ValidacionCampo valido={nombre === "" ? null : validar(nombre, "NOMBRE")} mensaje={nombre.trim() === "" ? "No puedes ingresar solo espacios" : "Nombre válido"} />
+            </div>
+            <div>
+              <input
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                placeholder="Apellido Paterno"
+                value={apellidoPaterno}
+                onChange={(e) => setApellidoPaterno(e.target.value)}
+              />
+              <ValidacionCampo valido={apellidoPaterno === "" ? null : validar(apellidoPaterno, "NOMBRE")} mensaje={"Apellido válido"} />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-            <input
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-              placeholder="Apellido Materno"
-              value={apellidoMaterno}
-              onChange={(e) => setApellidoMaterno(e.target.value)}
-            />
-            <input
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            <div>
+              <input
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                placeholder="Apellido Materno"
+                value={apellidoMaterno}
+                onChange={(e) => setApellidoMaterno(e.target.value)}
+              />
+              <ValidacionCampo valido={apellidoMaterno === "" ? null : validar(apellidoMaterno, "NOMBRE")} mensaje={"Apellido válido"} />
+            </div>
+            <div>
+              <input
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <ValidacionCampo valido={email === "" ? null : validar(email, "EMAIL")} mensaje={"Correo válido"} />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-            <input
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-              placeholder="Teléfono"
-              value={telefono}
-              onChange={(e) => setTelefono(e.target.value)}
-            />
-            <input
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-              placeholder="RFC"
-              value={rfc}
-              onChange={(e) => setRfc(e.target.value)}
-            />
+            <div>
+              <input
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                placeholder="Teléfono"
+                value={telefono}
+                onChange={(e) => setTelefono(e.target.value)}
+              />
+              <ValidacionCampo valido={telefono === "" ? null : validar(telefono, "TELEFONO")} mensaje={"Teléfono válido (10 dígitos)"} />
+            </div>
+            <div>
+              <input
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                placeholder="RFC"
+                value={rfc}
+                onChange={(e) => setRfc(e.target.value)}
+              />
+              <ValidacionCampo valido={rfc === "" ? null : validar(rfc, "RFC")} mensaje={"RFC válido"} />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-            <input
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-              placeholder="Dirección"
-              value={direccion}
-              onChange={(e) => setDireccion(e.target.value)}
-            />
-            <input
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-              placeholder="Código Postal"
-              value={codigopos}
-              onChange={(e) => setCodigopos(e.target.value)}
-            />
+            <div>
+              <input
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                placeholder="Dirección"
+                value={direccion}
+                onChange={(e) => setDireccion(e.target.value)}
+              />
+              <ValidacionCampo valido={direccion === "" ? null : validar(direccion, "DIRECCION")} mensaje={"Dirección válida"} />
+            </div>
+            <div>
+              <input
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                placeholder="Código Postal"
+                value={codigopos}
+                onChange={(e) => setCodigopos(e.target.value)}
+              />
+              <ValidacionCampo valido={codigopos === "" ? null : validar(codigopos, "CODIGOPOS")} mensaje={"Código postal válido"} />
+            </div>
           </div>
 
           <div className="mb-6">
@@ -266,6 +308,7 @@ const AdministradorGestion = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+            <ValidacionCampo valido={password === "" ? null : validar(password, "PASSWORD")} mensaje={"Debe contener mayúscula, minúscula, número y símbolo"} />
           </div>
 
           <div className="mb-6">
@@ -275,18 +318,17 @@ const AdministradorGestion = () => {
               onChange={(e) => setRol(e.target.value)}
             >
               <option value="user">Usuario</option>
-              <option value={"SUPERADMINISTRADOR"}>Super Administrador</option>
+              <option value="SUPERADMINISTRADOR">Super Administrador</option>
               <option value="CLIENTE">Cliente</option>
               <option value="ADMINISTRADOR">Administrador</option>
             </select>
           </div>
 
           <button
-            className={`w-full p-3 text-lg rounded-lg transition-all duration-300 ${
-              isFormValid()
+            className={`w-full p-3 text-lg rounded-lg transition-all duration-300 ${isFormValid()
                 ? "bg-orange-600 hover:bg-orange-700 text-white"
                 : "bg-gray-400 text-gray-700 cursor-not-allowed"
-            }`}
+              }`}
             onClick={handleSubmit}
             disabled={!isFormValid()}
           >
