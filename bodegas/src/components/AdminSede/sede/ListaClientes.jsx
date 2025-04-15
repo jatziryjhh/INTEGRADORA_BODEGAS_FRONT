@@ -110,7 +110,7 @@ const ListaClientes = () => {
                           <td className="text-black py-2 px-4">{cliente.nombre} {cliente.apellidoPaterno} {cliente.apellidoMaterno}</td>
                           <td className="text-black py-2 px-4">{cliente.email}</td>
                           <td className="py-2 px-4">
-                            {cliente.status === "habilitado" ? (
+                            {cliente.status === true ? (
                               <span className="text-green-600">Habilitado</span>
                             ) : (
                               <span className="text-red-600">Inhabilitado</span>

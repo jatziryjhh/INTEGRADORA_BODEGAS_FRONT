@@ -20,6 +20,88 @@ const SedeGestion = () => {
     administrador: "",
   });
 
+  const activarSede = async (id) => {
+    try {
+      const confirmacion = await Swal.fire({
+        title: "¿Estás seguro?",
+        text: "La sede será activada",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, activar",
+        cancelButtonText: "Cancelar",
+      });
+
+      if (confirmacion.isConfirmed) {
+        const sedeOriginal = sedes.find((s) => s.id === id);
+
+        const response = await axios.put(
+          `http://localhost:8080/api/sedes/${id}`,
+          {
+            nombre: sedeOriginal.nombre,
+            direccion: sedeOriginal.direccion,
+            administrador: sedeOriginal.administrador,
+            status: true,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${userData.token}`,
+            },
+          }
+        );
+
+        setSedes((prev) =>
+          prev.map((sede) => (sede.id === id ? response.data : sede))
+        );
+
+        Swal.fire("Activada", "La sede ha sido activada.", "success");
+      }
+    } catch (error) {
+      console.error("Error al activar sede:", error);
+      Swal.fire("Error", "No se pudo activar la sede.", "error");
+    }
+  };
+
+  const desactivarSede = async (id) => {
+    try {
+      const confirmacion = await Swal.fire({
+        title: "¿Estás seguro?",
+        text: "La sede será desactivada",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, desactivar",
+        cancelButtonText: "Cancelar",
+      });
+
+      if (confirmacion.isConfirmed) {
+        const sedeOriginal = sedes.find((s) => s.id === id);
+
+        const response = await axios.put(
+          `http://localhost:8080/api/sedes/${id}`,
+          {
+            nombre: sedeOriginal.nombre,
+            direccion: sedeOriginal.direccion,
+            administrador: sedeOriginal.administrador,
+            status: false,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${userData.token}`,
+            },
+          }
+        );
+
+        setSedes((prev) =>
+          prev.map((sede) => (sede.id === id ? response.data : sede))
+        );
+
+        Swal.fire("Desactivado", "La sede ha sido desactivada.", "success");
+      }
+    } catch (error) {
+      console.error("Error al desactivar sede:", error);
+      Swal.fire("Error", "No se pudo desactivar la sede.", "error");
+    }
+  };
+
   // Guardar el token, rol e id del usuario
   const [userData, setUserData] = useState({
     token: localStorage.getItem("token"),
@@ -265,8 +347,8 @@ const SedeGestion = () => {
 
           <button
             className={`w-full p-3 text-lg rounded-lg transition-all duration-300 ${isFormValid()
-                ? "bg-orange-600 hover:bg-orange-700 text-white"
-                : "bg-gray-400 text-gray-700 cursor-not-allowed"
+              ? "bg-orange-600 hover:bg-orange-700 text-white"
+              : "bg-gray-400 text-gray-700 cursor-not-allowed"
               }`}
             onClick={handleSubmit}
             disabled={!isFormValid()}
@@ -275,7 +357,7 @@ const SedeGestion = () => {
           </button>
         </div>
 
-        {/* Lista de sedes */}
+
         <div className="w-full max-w-3xl p-8 bg-white shadow-lg rounded-xl mb-6">
           <h3 className="text-2xl font-semibold text-orange-600 mb-4">
             Sedes Activas
@@ -295,27 +377,26 @@ const SedeGestion = () => {
                           {sede.nombre}
                         </h4>
                         <p className="text-gray-600">{sede.direccion}</p>
-                        <p className="text-gray-600">
-                          Administrador: {sede.administrador || "No asignado"}
-                        </p>
                       </div>
-                      <div className="flex space-x-2">
+
+                      <div className="flex items-center gap-3">
                         <button
                           className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition duration-300"
                           onClick={() => {
                             setSedeEdicion(sede);
                             setNombre(sede.nombre);
                             setDireccion(sede.direccion);
-                            setAdministrador(sede.administrador || "");
+                            setAdministrador(sede.administrador?.id || "");
                           }}
                         >
                           Editar
                         </button>
+
                         <button
                           className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300 flex items-center"
-                          onClick={() => handleChangeStatus(sede.id, false)}
+                          onClick={() => desactivarSede(sede.id)}
                         >
-                          <FaTrashAlt className="mr-2" />
+                          <FaTrashAlt FaTrashAlt className="mr-2"/>
                           Desactivar
                         </button>
                       </div>
@@ -323,12 +404,53 @@ const SedeGestion = () => {
                   </div>
                 ))
             ) : (
-              <p className="text-center text-gray-500">No hay sedes activas.</p>
+              <p className="text-gray-600 text-center">No hay sedes activas.</p>
             )}
           </div>
         </div>
+
+        {/* Sedes inactivas */}
+        <div className="w-full max-w-3xl p-8 bg-white shadow-lg rounded-xl mb-6">
+          <h3 className="text-2xl font-semibold text-orange-600 mb-4">
+            Sedes Inactivas
+          </h3>
+          <div className="space-y-4">
+            {sedes.filter((sede) => !sede.status).length > 0 ? (
+              sedes
+                .filter((sede) => !sede.status)
+                .map((sede) => (
+                  <div
+                    key={sede.id}
+                    className="p-4 bg-gray-50 rounded-lg shadow-sm hover:shadow-lg transition duration-300"
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="text-xl font-semibold text-gray-800">
+                          {sede.nombre}
+                        </h4>
+                        <p className="text-gray-600">{sede.direccion}</p>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <button
+                          className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-300"
+                          onClick={() => activarSede(sede.id)}
+                        >
+                          Activar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+            ) : (
+              <p className="text-gray-600 text-center">No hay sedes inactivas.</p>
+            )}
+          </div>
+        </div>
+
       </main>
     </div>
+
   );
 };
 

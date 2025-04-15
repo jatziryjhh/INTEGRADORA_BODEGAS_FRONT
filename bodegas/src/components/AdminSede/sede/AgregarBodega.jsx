@@ -159,7 +159,7 @@ const AgregarBodega = () => {
             <div>
               <input
                 className="text-black p-3 border border-gray-300 rounded-lg w-full"
-                placeholder="Folio (Ej: B32)"
+                placeholder="Folio (Ej: BODP001)"
                 value={folio}
                 onChange={(e) => setFolio(e.target.value)}
               />

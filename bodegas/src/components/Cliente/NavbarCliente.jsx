@@ -8,6 +8,7 @@ const NavbarCliente = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("rol");
     localStorage.removeItem("id");
+    
     navigate("/login");
   };
 

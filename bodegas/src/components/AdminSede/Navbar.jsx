@@ -7,7 +7,8 @@ const Navbar = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("usuario");
+    localStorage.removeItem("rol");
+    localStorage.removeItem("id");
     navigate("/login");
   };
 
@@ -18,7 +19,7 @@ const Navbar = () => {
           className="text-white text-2xl font-semibold cursor-pointer"
           onClick={() => navigate("/admin/dashboard")}
         >
-          LOGO
+          Dashboard
         </div>
         <div className="space-x-6 flex items-center">
           <Link
