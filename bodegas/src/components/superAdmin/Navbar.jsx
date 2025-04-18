@@ -9,6 +9,7 @@ const Navbar = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("rol");
     localStorage.removeItem("id");
+    localStorage.removeItem("status");
     navigate("/login");
   };
 

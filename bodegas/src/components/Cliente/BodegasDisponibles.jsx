@@ -14,8 +14,6 @@ const BodegasDisponibles = () => {
       const response = await axios.get("http://localhost:8080/api/bodegas/", {
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      console.log("Bodegas disponibles:", response.data);
       const disponibles = response.data.filter(
         (bodega) => bodega.status === "DISPONIBLE"
       );

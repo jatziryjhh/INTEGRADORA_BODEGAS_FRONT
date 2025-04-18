@@ -50,7 +50,7 @@ const CheckoutForm = ({ bodega }) => {
       );
 
       const { clientSecret } = response.data; // Obtener el clientSecret desde la respuesta
-     
+
       if (!clientSecret) {
         Swal.fire("Error", "No se pudo obtener el clientSecret", "error");
         return;
@@ -70,13 +70,42 @@ const CheckoutForm = ({ bodega }) => {
         Swal.fire("Error", result.error.message, "error");
       } else {
         if (result.paymentIntent.status === "succeeded") {
-          Swal.fire("Éxito", "Pago realizado con éxito", "success");
-          // Redirigir a la lista de bodegas
-          
-          navigate("/cliente/dashboard"); 
+          try {
+            const token = localStorage.getItem("token"); 
+            const clienteId = localStorage.getItem("id"); // ID del cliente autenticado
+
+            const updatedBodega = {
+              sede: { id: bodega.sede.id },         // Asegúrate que `bodega.sede.id` exista
+              tipo: bodega.tipo,
+              folio: bodega.folio,
+              precio: bodega.precio,
+              status: "RENTADA",
+              tamano: bodega.tamano,
+              edificio: bodega.edificio,
+              cliente: { id: clienteId },           // ID del cliente que rentó la bodega
+            };
+
+            const response = await fetch(`http://localhost:8080/api/bodegas/${bodega.id}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`, // si lo usas, si no, elimina esta línea
+              },
+              body: JSON.stringify(updatedBodega),
+            });
+
+            if (!response.ok) {
+              throw new Error("Error al Actualizar la bodega");
+            }
+
+            Swal.fire("¡Éxito!", "Pago realizado con exito", "success");
+            navigate("/cliente/dashboard");
+
+          } catch (error) {
+            console.error("Error:", error);
+            Swal.fire("Ups", "Ocurrió un error al asignar la bodega", "error");
+          }
         }
-
-
       }
     } catch (err) {
       console.error(err);
@@ -89,18 +118,18 @@ const CheckoutForm = ({ bodega }) => {
       onSubmit={handleSubmit}
       className="bg-white p-6 rounded-lg shadow-md max-w-lg mx-auto mt-10"
     >
-      <h2 className="text-2xl font-bold mb-4 text-center">
+      <h2 className="text-blue-700 text-2xl font-bold mb-4 text-center">
         Pagar Bodega #{bodega.folio}
       </h2>
       <p className="text-gray-600 text-center mb-6">
         Total a pagar: <strong>${bodega.precio}</strong>
       </p>
       <div className="border p-4 rounded mb-4">
-        <CardElement /> {/* Campo para ingresar la tarjeta */}
+        <CardElement />
       </div>
       <button
         type="submit"
-        disabled={!stripe} // Deshabilitar el botón hasta que Stripe esté listo
+        disabled={!stripe} 
         className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
       >
         Pagar
@@ -111,9 +140,8 @@ const CheckoutForm = ({ bodega }) => {
 
 const VistaPagoStripe = () => {
   const location = useLocation();
-  const bodega = location.state?.bodega; // Obtener la bodega desde la URL
+  const bodega = location.state?.bodega; 
 
-  // Verifica si la bodega existe y tiene el id
   if (!bodega || !bodega.id) {
     return (
       <div className="min-h-screen flex items-center justify-center text-red-500 font-bold">
