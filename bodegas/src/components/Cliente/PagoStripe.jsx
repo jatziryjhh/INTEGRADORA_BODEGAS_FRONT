@@ -72,8 +72,11 @@ const CheckoutForm = ({ bodega }) => {
         if (result.paymentIntent.status === "succeeded") {
           Swal.fire("Éxito", "Pago realizado con éxito", "success");
           // Redirigir a la lista de bodegas
+          
           navigate("/cliente/dashboard"); 
         }
+
+
       }
     } catch (err) {
       console.error(err);

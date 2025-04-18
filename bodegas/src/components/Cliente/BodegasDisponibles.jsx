@@ -15,6 +15,7 @@ const BodegasDisponibles = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      console.log("Bodegas disponibles:", response.data);
       const disponibles = response.data.filter(
         (bodega) => bodega.status === "DISPONIBLE"
       );

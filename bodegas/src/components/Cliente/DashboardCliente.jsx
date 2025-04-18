@@ -41,16 +41,16 @@ const DashboardCliente = () => {
                                 key={bodega.id}
                                 className="bg-white border border-gray-200 rounded-2xl shadow-md p-6 hover:shadow-xl transition-shadow duration-300"
                             >
-                                <h3 className="text-xl font-semibold mb-2 text-indigo-600">Bodega #{bodega.id}</h3>
+                                <h3 className="text-xl font-semibold mb-2 text-indigo-600">Bodega #{bodega.folio}</h3>
                                 <p className="text-black"><span className="font-semibold text-black">Edificio:</span> {bodega.edificio}</p>
                                 <p className="text-black" ><span className="font-semibold text-black">Tamaño:</span> {bodega.tamano}</p>
                                 <p className="text-black"><span className="font-semibold text-black">Precio:</span> ${bodega.precio}</p>
 
                                 <div className="mt-4 flex items-center space-x-2">
-                                    {bodega.estatusPago === "pagado" ? (
+                                    {bodega.status === "RENTADA" ? (
                                         <>
                                             <CheckCircle className="text-green-500 w-5 h-5" />
-                                            <span className="text-green-600 font-medium">Pagado</span>
+                                            <span className="text-green-600 font-medium">RENTADA</span>
                                         </>
                                     ) : (
                                         <>
