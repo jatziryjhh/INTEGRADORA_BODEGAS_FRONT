@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import back from "./img/cop.jpg";
 import media from "./img/media.png";
 import front from "./img/front.png";
@@ -40,13 +41,23 @@ export default function LoginView() {
         },
         body: JSON.stringify({ email, password }),
       });
-
+  
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(errorText || "Error al iniciar sesión");
       }
-
+  
       const data = await response.json();
+  
+      if (data.status === false) {
+        Swal.fire({
+          icon: "error",
+          title: "Usuario inactivo",
+          text: "Tu cuenta está deshabilitada. Contacta con un administrador.",
+        });
+        return; 
+      }
+  
       localStorage.setItem("token", data.token);
       localStorage.setItem("rol", data.rol);
       localStorage.setItem("id", data.id);
@@ -58,7 +69,7 @@ export default function LoginView() {
       } else if (data.rol === "CLIENTE") {
         navigate("/cliente/dashboard");
       }
-
+  
     } catch (err) {
       setError(err.message);
     }
