@@ -85,7 +85,7 @@ const CheckoutForm = ({ bodega }) => {
               cliente: { id: clienteId },           // ID del cliente que rentó la bodega
             };
 
-            const response = await fetch(`http://localhost:8080/api/bodegas/${bodega.id}`, {
+            const responseUpdate = await fetch(`http://localhost:8080/api/bodegas/${bodega.id}`, {
               method: "PUT",
               headers: {
                 "Content-Type": "application/json",
@@ -94,7 +94,7 @@ const CheckoutForm = ({ bodega }) => {
               body: JSON.stringify(updatedBodega),
             });
 
-            if (!response.ok) {
+            if (!responseUpdate.ok) {
               throw new Error("Error al Actualizar la bodega");
             }
 
