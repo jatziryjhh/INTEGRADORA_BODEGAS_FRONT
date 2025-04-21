@@ -317,9 +317,7 @@ const AdministradorGestion = () => {
               value={rol}
               onChange={(e) => setRol(e.target.value)}
             >
-              <option value="user">Usuario</option>
               <option value="SUPERADMINISTRADOR">Super Administrador</option>
-              <option value="CLIENTE">Cliente</option>
               <option value="ADMINISTRADOR">Administrador</option>
             </select>
           </div>
