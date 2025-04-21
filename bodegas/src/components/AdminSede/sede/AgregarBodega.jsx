@@ -15,6 +15,14 @@ const AgregarBodega = () => {
   const [sedes, setSedes] = useState([]);
   const [bodegaEdicion, setBodegaEdicion] = useState(null);
 
+  // Regex iguales a los del backend
+  const FOLIO_PATTERN = /^[A-Z0-9]{5,10}$/;
+  const PRECIO_PATTERN = /^(?!0+(\.0{1,2})?$)\d+(\.\d{1,2})?$/;
+  const TIPO_PATTERN = /^(?! )[A-ZÁÉÍÓÚÑa-záéíóúñ]+(?: [A-ZÁÉÍÓÚÑa-záéíóúñ]+){0,49}$/;
+  const TAMANO_PATTERN = TIPO_PATTERN;
+  const EDIFICIO_PATTERN = TIPO_PATTERN;
+  const STATUS_PATTERN = /^(DISPONIBLE|RENTADA|POR VENCER|VENCIDA)$/i;
+
   useEffect(() => {
     const obtenerSedes = async () => {
       try {
@@ -37,17 +45,26 @@ const AgregarBodega = () => {
     obtenerSedes();
   }, []);
 
-  const validarCampo = (valor) => valor.trim() !== "";
+  const validarCampo = (valor, regex) => regex.test(valor.trim());
+
+  const esPrecioValido = (valor) => {
+    const numero = parseFloat(valor);
+    return (
+      PRECIO_PATTERN.test(valor.trim()) &&
+      !isNaN(numero) &&
+      numero >= 1 &&
+      numero <= 999999
+    );
+  };
 
   const isFormValid = () =>
-    validarCampo(folio) &&
-    validarCampo(precio) &&
-    validarCampo(tipo) &&
-    validarCampo(status) &&
-    validarCampo(tamano) &&
-    validarCampo(edificio) &&
-    validarCampo(sede) &&
-    parseFloat(precio) >= 0;
+    validarCampo(folio, FOLIO_PATTERN) &&
+    esPrecioValido(precio) &&
+    validarCampo(tipo, TIPO_PATTERN) &&
+    validarCampo(status, STATUS_PATTERN) &&
+    validarCampo(tamano, TAMANO_PATTERN) &&
+    validarCampo(edificio, EDIFICIO_PATTERN) &&
+    sede !== "";
 
   const handleSubmit = async () => {
     if (!isFormValid()) {
@@ -125,23 +142,15 @@ const AgregarBodega = () => {
     }
   };
 
-  const renderValidacion = (campo, isPrecio = false) => {
-    if (campo === "") return null;
-
-    if (isPrecio) {
-      if (campo.trim() === "") {
-        return <p className="text-red-600 text-sm">❌ Este campo no puede estar vacío</p>;
-      }
-      if (parseFloat(campo) < 0) {
-        return <p className="text-red-600 text-sm">❌ El precio no puede ser negativo</p>;
-      }
-      return <p className="text-green-600 text-sm">✅ Campo válido</p>;
-    }
-
-    return validarCampo(campo) ? (
+  const renderValidacion = (valor, regex, esPrecio = false) => {
+    if (valor === "") return null;
+    const valido = esPrecio ? esPrecioValido(valor) : regex.test(valor.trim());
+    return valido ? (
       <p className="text-green-600 text-sm">✅ Campo válido</p>
     ) : (
-      <p className="text-red-600 text-sm">❌ Este campo no puede estar vacío</p>
+      <p className="text-red-600 text-sm">
+        ❌ {esPrecio ? "Precio inválido (mínimo 1, máx 999999, hasta 2 decimales)" : "Formato inválido"}
+      </p>
     );
   };
 
@@ -154,7 +163,6 @@ const AgregarBodega = () => {
             {bodegaEdicion ? "Editar Bodega" : "Alta de Bodega"}
           </h2>
 
-          {/* Campos con validación */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div>
               <input
@@ -163,7 +171,7 @@ const AgregarBodega = () => {
                 value={folio}
                 onChange={(e) => setFolio(e.target.value)}
               />
-              {renderValidacion(folio)}
+              {renderValidacion(folio, FOLIO_PATTERN)}
             </div>
 
             <div>
@@ -174,7 +182,7 @@ const AgregarBodega = () => {
                 value={precio}
                 onChange={(e) => setPrecio(e.target.value)}
               />
-              {renderValidacion(precio, true)}
+              {renderValidacion(precio, PRECIO_PATTERN, true)}
             </div>
           </div>
 
@@ -186,7 +194,7 @@ const AgregarBodega = () => {
                 value={tipo}
                 onChange={(e) => setTipo(e.target.value)}
               />
-              {renderValidacion(tipo)}
+              {renderValidacion(tipo, TIPO_PATTERN)}
             </div>
 
             <div>
@@ -198,7 +206,7 @@ const AgregarBodega = () => {
                 <option value="DISPONIBLE">DISPONIBLE</option>
                 <option value="RENTADA">RENTADA</option>
               </select>
-              {renderValidacion(status)}
+              {renderValidacion(status, STATUS_PATTERN)}
             </div>
           </div>
 
@@ -210,7 +218,7 @@ const AgregarBodega = () => {
                 value={tamano}
                 onChange={(e) => setTamano(e.target.value)}
               />
-              {renderValidacion(tamano)}
+              {renderValidacion(tamano, TAMANO_PATTERN)}
             </div>
 
             <div>
@@ -226,7 +234,11 @@ const AgregarBodega = () => {
                   </option>
                 ))}
               </select>
-              {renderValidacion(sede)}
+              {sede === "" ? (
+                <p className="text-red-600 text-sm">❌ Este campo es requerido</p>
+              ) : (
+                <p className="text-green-600 text-sm">✅ Campo válido</p>
+              )}
             </div>
           </div>
 
@@ -237,10 +249,9 @@ const AgregarBodega = () => {
               value={edificio}
               onChange={(e) => setEdificio(e.target.value)}
             />
-            {renderValidacion(edificio)}
+            {renderValidacion(edificio, EDIFICIO_PATTERN)}
           </div>
 
-          {/* Botones */}
           <button
             className={`w-full p-3 text-lg font-semibold rounded-lg transition ${
               isFormValid()
